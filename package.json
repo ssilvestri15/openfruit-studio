@@ -1,0 +1,87 @@
+{
+  "name": "openfruit-studio",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "OpenFruit Studio - iOS development IDE for Windows",
+  "license": "MIT",
+  "main": "dist-electron/main.cjs",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "test:desktop": "electron tests/electron-smoke.cjs",
+    "typecheck": "tsc --noEmit",
+    "dev": "vite",
+    "dev:desktop": "node start-dev.mjs",
+    "build:vite": "vite build",
+    "build:electron": "node build-electron.mjs",
+    "build": "npm run build:vite && npm run build:electron",
+    "dist": "npm run build && electron-builder --win",
+    "dist:dir": "npm run build && electron-builder --win --dir",
+    "start": "electron .",
+    "preview": "vite preview",
+    "test:packaged": "node tests/run-packaged-smoke.cjs",
+    "test:xcode": "electron tests/xcode-smoke.cjs",
+    "test:local": "node --test tests/review.test.mjs tests/workspace-files-terminal.test.mjs tests/conflicts-git-cancellation.test.mjs tests/merge.test.mjs tests/ide-improvements.test.mjs tests/pbxproj.test.mjs tests/project-settings.test.mjs tests/media-commits.test.mjs",
+    "lint": "tsc --noEmit --noUnusedLocals --noUnusedParameters",
+    "test:media-ui": "node tests/run-media-ui-smoke.cjs"
+  },
+  "build": {
+    "appId": "com.openfruit.studio",
+    "productName": "OpenFruit Studio",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json",
+      "LICENSE",
+      "README.md",
+      "docs/*.md",
+      "branding/openfruit-studio.ico"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "branding/openfruit-studio.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "installer/installer.nsh",
+      "installerIcon": "branding/openfruit-studio.ico",
+      "installerLanguages": ["en_US"]
+    },
+    "asarUnpack": [
+      "node_modules/node-pty/**/*"
+    ],
+    "npmRebuild": false
+  },
+  "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/xterm": "6.0.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.16.0",
+    "monaco-editor": "^0.52.2",
+    "node-pty": "1.1.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "tailwind-merge": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.21",
+    "electron": "45.1.0",
+    "electron-builder": "^26.15.3",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.1"
+  }
+}

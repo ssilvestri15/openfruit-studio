@@ -1,0 +1,335 @@
+{
+  "objective": "Implementare il backlog IDE; build IDE desktop consentite, nessuna build app iOS o download SDK",
+  "overall_status": "in_progress",
+  "date": "2026-10-30",
+  "constraints": {
+    "application_builds": true,
+    "ios_builds": false,
+    "sdk_downloads": false,
+    "restart_user_ide": true,
+    "desktop_builds": true,
+    "clarification": "L’utente ha chiarito che il divieto riguarda le build delle app iOS; build e apertura dell’IDE desktop sono consentite. Nessun download SDK."
+  },
+  "verification": {
+    "typecheck": "passed (noEmit, noUnusedLocals, noUnusedParameters)",
+    "local_tests": {
+      "passed": 56,
+      "failed": 0
+    },
+    "native_pty_tests": {
+      "passed": 1,
+      "failed": 0
+    },
+    "media_ui_smoke": {
+      "passed": 7,
+      "browser_errors": 0,
+      "method": "Finestra Electron offscreen isolata e Vite dev server; nessuna build del prodotto"
+    },
+    "application_build": "passed: Vite frontend + Electron main/preload",
+    "ios_build": "not run by user instruction",
+    "sdk_download": "not run by user instruction",
+    "desktop_package": "passed: release/win-unpacked, Electron locale, nessun download SDK",
+    "packaged_smoke": "passed: ASAR coerente con dist/dist-electron e ConPTY nativo",
+    "xcode_ui_smoke": "passed: package nascosto, target/configurazioni, salvataggio bundle/team e protezione conflitti",
+    "production_media_ui_smoke": "passed: PNG reale 1.6 MB 1024x1024, editor/preview SVG, watcher, commit/diff, configurazione PBX"
+  },
+  "counts": {
+    "partial": 38,
+    "implemented_local": 13,
+    "pending": 1,
+    "needs_backend": 4,
+    "verification_deferred": 2
+  },
+  "items": [
+    {
+      "id": "X01",
+      "status": "partial",
+      "notes": "Navigatore PBX con gruppi, variant/version groups, sourceTree e directory sincronizzate; restano eccezioni dei gruppi sincronizzati e riferimenti esterni complessi."
+    },
+    {
+      "id": "X02",
+      "status": "partial",
+      "notes": "Rinomina/cestino coordinati con PBX e rollback; aggiunta di riferimenti, rimozione e membership nella configurazione. Creazione sul disco e associazione al target sono ancora due azioni esplicite."
+    },
+    {
+      "id": "X03",
+      "status": "partial",
+      "notes": "Lettura workspace XML e progetti inclusi entro i permessi; restano grafo delle dipendenze e autorizzazioni multi-root complete."
+    },
+    {
+      "id": "X04",
+      "status": "implemented_local",
+      "notes": "Selezione scheme o target qualificato, configurazioni personalizzate e SDK già registrato; argomenti collegati al CLI. Nessuna compilazione eseguita."
+    },
+    {
+      "id": "X05",
+      "status": "partial",
+      "notes": "Risoluzione xcconfig con include opzionali, inherited, livelli, condizioni e variabili supportate. Contesto iPhoneOS/arm64 dichiarato; default SDK e semantica Xcode completa non certificati."
+    },
+    {
+      "id": "X06",
+      "status": "partial",
+      "notes": "CRUD target/prodotti e duplicazione/eliminazione configurazioni con protezione degli oggetti condivisi. Restano build rules, migrazioni e aggiornamento degli scheme."
+    },
+    {
+      "id": "X07",
+      "status": "partial",
+      "notes": "Requisiti pacchetti strutturati, aggiunta/rimozione e prodotto collegato al target/frameworks; restano risoluzione, lockfile e gestione completa dei prodotti esistenti."
+    },
+    {
+      "id": "X08",
+      "status": "partial",
+      "notes": "Dipendenze tra target locali modificabili, controllo duplicati e cicli. Restano proxy e dipendenze incrociate tra progetti."
+    },
+    {
+      "id": "X09",
+      "status": "partial",
+      "notes": "Membership sorgenti/risorse/framework, fasi e script modificabili; API di riordino disponibile. Restano UI del riordino, copie, shell/input/output e opzioni avanzate."
+    },
+    {
+      "id": "X10",
+      "status": "partial",
+      "notes": "Campi signing, Info.plist ed entitlements e editor plist. Restano capabilities assistite e validazione delle identità/profili."
+    },
+    {
+      "id": "X11",
+      "status": "partial",
+      "notes": "Editor plist XML tipizzato e visualizzatore immagini/SVG; restano editor di cataloghi asset/localizzazioni/documenti UI e codec HEIC/TIFF."
+    },
+    {
+      "id": "X12",
+      "status": "pending",
+      "notes": "Il project editor rimane un dialogo; integrazione come tab del workbench non ancora realizzata."
+    },
+    {
+      "id": "X13",
+      "status": "partial",
+      "notes": "Template Xcode SwiftUI con UUID e scheme condiviso, alternativa Swift Package e creazione target framework/extension. Restano template test/UIKit/Objective-C."
+    },
+    {
+      "id": "X14",
+      "status": "partial",
+      "notes": "Identità e versioni lette da PBX/xcconfig/Package.swift; recenti identificati per percorso. Restano metadati completi per scheme e aggiornamento del branch nei recenti."
+    },
+    {
+      "id": "X15",
+      "status": "partial",
+      "notes": "Entrypoint .xcodeproj/.xcworkspace e argomenti di lancio, istanza secondaria e permessi per file selezionati. Restano autorizzazioni esterne basate sull’intero grafo workspace."
+    },
+    {
+      "id": "E01",
+      "status": "needs_backend",
+      "notes": "Il contratto inspect non espone un piano compiler/BSP completo; nessun contesto iOS simulato."
+    },
+    {
+      "id": "E02",
+      "status": "partial",
+      "notes": "Definition/references, rename dei modelli aperti, signature help, formatting, simboli e folding. Restano code actions, semantic tokens e rename di file chiusi con anteprima completa."
+    },
+    {
+      "id": "E03",
+      "status": "partial",
+      "notes": "Syntax highlighting per C/C++/Objective-C, JS/TS, XML/SVG, Markdown, shell, Python/YAML e servizio JSON; restano server semantici oltre Swift."
+    },
+    {
+      "id": "E04",
+      "status": "implemented_local",
+      "notes": "Ricerca globale in worker con esclusioni, regex/Unicode, cancellazione, navigazione, virtualizzazione e sostituzioni letterali protette da revisioni."
+    },
+    {
+      "id": "E05",
+      "status": "partial",
+      "notes": "Navigazione a definition/references e simboli Monaco; restano breadcrumb semantici e cronologia avanti/indietro."
+    },
+    {
+      "id": "E06",
+      "status": "partial",
+      "notes": "Click dei problemi porta a riga/colonna; restano range completo, informazioni correlate e fix."
+    },
+    {
+      "id": "E07",
+      "status": "partial",
+      "notes": "Due gruppi di editor, riordino con drag/drop e tab fissati. Restano preview tab, MRU e collaudo integrato completo dei gruppi."
+    },
+    {
+      "id": "E08",
+      "status": "partial",
+      "notes": "Watcher ricorsivo, rilettura dei tab puliti e conflitti per quelli modificati; HEAD/index/refs osservati dentro la radice. Resta il watcher .git esterno nei progetti annidati."
+    },
+    {
+      "id": "E09",
+      "status": "implemented_local",
+      "notes": "Autosave persistente dopo una pausa; salvataggi atomici, revisioni e protezione dei conflitti. Documenti nuovi e immagini esclusi dall’autosave."
+    },
+    {
+      "id": "E10",
+      "status": "implemented_local",
+      "notes": "Documenti untitled e Salva con nome testuale con picker nativo, permessi esatti e protezione dei buffer aperti e delle revisioni."
+    },
+    {
+      "id": "B01",
+      "status": "partial",
+      "notes": "Build separata da Build e installa, installazione IPA indipendente nelle impostazioni device. Run resta dipendente dal contratto del motore."
+    },
+    {
+      "id": "B02",
+      "status": "needs_backend",
+      "notes": "Rimosso il falso transcript LLDB. Sessione DAP/adapter, breakpoint, stepping e variabili richiedono un contratto disponibile e verificabile."
+    },
+    {
+      "id": "B03",
+      "status": "needs_backend",
+      "notes": "Il CLI documenta build-for testing come sola compilazione, non runner XCTest/XCUITest o coverage."
+    },
+    {
+      "id": "B04",
+      "status": "partial",
+      "notes": "Report con task/durate realmente ricevuti e output filtrabile. Restano timeline live, relazioni e artefatti cliccabili."
+    },
+    {
+      "id": "B05",
+      "status": "partial",
+      "notes": "Report JSON locali per operazioni CLI, cronologia per workspace ed esportazione; limiti e retention espliciti. Resta replay del journal nativo e copertura uniforme di tutti i comandi."
+    },
+    {
+      "id": "B06",
+      "status": "partial",
+      "notes": "Installazione IPA nativa indipendente; restano workflow completi package/archive/sign/export e verifica delle firme supportata dal motore."
+    },
+    {
+      "id": "B07",
+      "status": "partial",
+      "notes": "Profili PowerShell/cmd, riavvio, rinomina, ricerca/pulizia buffer, font/scrollback persistenti. Restano profilo predefinito e layout terminali persistenti."
+    },
+    {
+      "id": "B08",
+      "status": "needs_backend",
+      "notes": "Rimossa la preview Orto simulata. Nessun renderer/simulatore SwiftUI disponibile nel contratto attuale."
+    },
+    {
+      "id": "I01",
+      "status": "implemented_local",
+      "notes": "Inventario SDK reale e selezione dal motore; catalogo consultabile tramite azione esplicita."
+    },
+    {
+      "id": "I02",
+      "status": "partial",
+      "notes": "Select/remove/download collegati a comandi nativi con stream/cancellazione. Download e relative verifiche non eseguiti per istruzione utente; restano dettagli spazio/receipt."
+    },
+    {
+      "id": "I03",
+      "status": "partial",
+      "notes": "CLI, identità Git, inventario, doctor/cache status e refresh capabilities; alcuni percorsi sono dichiarati predefiniti. Bootstrap/update-dependency non avviati né automatizzati."
+    },
+    {
+      "id": "I04",
+      "status": "partial",
+      "notes": "Accesso Apple del motore e percorsi di firma reali; restano inventario/import/selezione certificati e profili con scadenze."
+    },
+    {
+      "id": "I05",
+      "status": "implemented_local",
+      "notes": "Stato device condiviso nelle viste, errori visibili e host Wi-Fi diretto; rimossi device/UDID fittizi."
+    },
+    {
+      "id": "I06",
+      "status": "implemented_local",
+      "notes": "Controlli nativi per info/log/screenshot/registrazione fotogrammi/installazione IPA, con selezione output e cancellazione. Nessuna operazione eseguita sul dispositivo dell’utente."
+    },
+    {
+      "id": "I07",
+      "status": "implemented_local",
+      "notes": "Preferenze persistenti font/indentazione/wrap/minimap/autosave/tema/terminale/scorciatoie con validazione e gestione modifiche da altre finestre."
+    },
+    {
+      "id": "G01",
+      "status": "partial",
+      "notes": "Creazione/cambio branch, remoti, upstream visualizzato e ahead/behind. Restano configurazione tracking e operazioni avanzate sui branch."
+    },
+    {
+      "id": "G02",
+      "status": "partial",
+      "notes": "Pull fast-forward, merge/rebase, stash e lista conflitti dell’indice con editing/stage manuale. Restano editor dedicato alle tre versioni Git e controlli completi dello stato sequencer."
+    },
+    {
+      "id": "G03",
+      "status": "partial",
+      "notes": "HEAD–indice e indice–disco corretti, stage/unstage/discard per hunk con controllo revisione. Restano selezione delle singole righe e operazioni granulari su rinomine/binari."
+    },
+    {
+      "id": "G04",
+      "status": "implemented_local",
+      "notes": "Commit espandibili con file modificati; confronto storico testo/immagini/SVG, rinomine, root commit, aggiunte/rimozioni e parent dei merge; cronologia paginata. Blame resta da aggiungere."
+    },
+    {
+      "id": "G05",
+      "status": "partial",
+      "notes": "Versione e identità Git globale reali e modificabili; credenziali affidate al credential helper. Restano scelta del binario e identità locale assistita."
+    },
+    {
+      "id": "G06",
+      "status": "implemented_local",
+      "notes": "Gli errori della lettura Git sono propagati e non svuotano la vista come repository assente."
+    },
+    {
+      "id": "R01",
+      "status": "implemented_local",
+      "notes": "Scritture atomiche di default per i sorgenti, fsync, queue e verifica revisione."
+    },
+    {
+      "id": "R02",
+      "status": "partial",
+      "notes": "Sessione versionata, backup recuperabile, limiti/errori visibili e media ricaricati dal disco. Restano bozze dei dialoghi e ripristino completo delle finestre."
+    },
+    {
+      "id": "R03",
+      "status": "partial",
+      "notes": "Lock single-instance e inoltro entrypoint; resta ripristino persistente dell’insieme delle finestre."
+    },
+    {
+      "id": "R04",
+      "status": "partial",
+      "notes": "Shortcut per contesto, registry modificabile, navigatore accessibile e focus trap nei dialoghi principali. Restano rifiniture uniformi dei menu e dei dialoghi legacy."
+    },
+    {
+      "id": "R05",
+      "status": "partial",
+      "notes": "URI/root LSP e nuove API tipizzate/validate; restano alcuni contratti IPC legacy any e uno schema globale versionato."
+    },
+    {
+      "id": "R06",
+      "status": "implemented_local",
+      "notes": "UTF-8 rigoroso, BOM/EOL mantenuti, media letti come byte e SVG come testo con preview, binari non mostrati come caratteri."
+    },
+    {
+      "id": "R07",
+      "status": "partial",
+      "notes": "Albero e ricerca virtualizzati, scansioni/letture/regex limitate e diff commit caricati al click. Restano benchmark grandi repository, cache e lazy diff dello stato Git."
+    },
+    {
+      "id": "R08",
+      "status": "partial",
+      "notes": "Cestino, distinzione riferimento/file, scaffold in staging con rollback, wizard attende l’esito, buffer preservati nei ripristini/cancellazioni. Resta undo applicativo."
+    },
+    {
+      "id": "R09",
+      "status": "implemented_local",
+      "notes": "Esplora file e documenti locali collegati; Novità punta al registro aggiornato."
+    },
+    {
+      "id": "Q01",
+      "status": "partial",
+      "notes": "Servizi separati, GitDrawer consolidato, import/demo ripuliti, noUnused/lint e workflow CI. App/main necessitano ancora ulteriore scomposizione e formatting uniforme."
+    },
+    {
+      "id": "Q02",
+      "status": "verification_deferred",
+      "notes": "Test locali, PBX/workspace/xcconfig/media/Git e smoke UI aggiunti. Round-trip Xcode, build firmata e installazione reale non eseguiti."
+    },
+    {
+      "id": "Q03",
+      "status": "verification_deferred",
+      "notes": "Pacchetto win-unpacked ricostruito e verificato: frontend/main/preload/ASAR coerenti e PTY nativo funzionante. Restano installer aggiornati, firma, aggiornamenti e Windows pulito."
+    }
+  ]
+}

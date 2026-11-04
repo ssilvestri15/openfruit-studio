@@ -1,0 +1,99 @@
+name: Windows build and release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Read version and verify release tag
+        id: package
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -cne "v$version") {
+            throw "Tag $env:GITHUB_REF_NAME must match package.json (v$version)."
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run test:media-ui
+      - name: Build Windows packages for review
+        if: github.ref_type != 'tag'
+        run: npm run dist -- --x64 --publish never
+      - name: Build and sign Windows release packages
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: |
+          if (-not $env:WIN_CSC_LINK -or -not $env:WIN_CSC_KEY_PASSWORD) {
+            throw 'Configure WIN_CSC_LINK and WIN_CSC_KEY_PASSWORD before publishing a release.'
+          }
+          npm run dist -- --x64 --publish never -c.forceCodeSigning=true
+          exit $LASTEXITCODE
+      - run: npm run test:packaged
+      - name: Stage validated release files
+        shell: pwsh
+        env:
+          STUDIO_VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          $files = @{
+            "release/OpenFruit Studio Setup $env:STUDIO_VERSION.exe" = 'OpenFruit-Studio-Setup-x64.exe'
+            "release/OpenFruit Studio $env:STUDIO_VERSION.exe" = 'OpenFruit-Studio-Portable-x64.exe'
+          }
+          New-Item -ItemType Directory -Path release/public -Force | Out-Null
+          foreach ($file in $files.Keys) {
+            if (-not (Test-Path -LiteralPath $file -PathType Leaf)) {
+              throw "Missing expected artifact: $file"
+            }
+            if ($env:GITHUB_REF_TYPE -eq 'tag') {
+              $signature = Get-AuthenticodeSignature -LiteralPath $file
+              if ($signature.Status -ne 'Valid' -or -not $signature.TimeStamperCertificate) {
+                throw "A valid, timestamped Authenticode signature is required for $file. Status: $($signature.Status)."
+              }
+            }
+            Copy-Item -LiteralPath $file -Destination (Join-Path release/public $files[$file])
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openfruit-studio-windows-x64
+          path: release/public/*.exe
+          if-no-files-found: error
+
+  publish:
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: openfruit-studio-windows-x64
+          path: release
+      - name: Publish Windows binaries
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          args=(--verify-tag --generate-notes)
+          if [[ "$version" == *-* ]]; then
+            args+=(--prerelease)
+          fi
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" "${args[@]}" \
+            release/OpenFruit-Studio-Setup-x64.exe \
+            release/OpenFruit-Studio-Portable-x64.exe

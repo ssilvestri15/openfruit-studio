@@ -1,0 +1,9 @@
+import { useTranslation } from '../localization';
+import {useEffect,useState} from 'react';
+import type {ResolvedSettings} from '../../electron/xcconfig';
+export function ResolvedBuildSettings({project,ownerId,configurationId,revision}:{project:string;ownerId:string;configurationId:string;revision:string}){
+  const t = useTranslation();
+ const [result,setResult]=useState<ResolvedSettings>(),[error,setError]=useState(''),[filter,setFilter]=useState('');
+ useEffect(()=>{let current=true;setResult(undefined);setError('');(window as any).openfruitApi.resolveXcodeSettings(project,ownerId,configurationId).then((r:ResolvedSettings)=>{if(current)setResult(r);}).catch((e:Error)=>{if(current)setError(e.message);});return()=>{current=false;};},[project,ownerId,configurationId,revision]);
+ return <div className="space-y-3"><p className="text-xs text-fruit-textDim">{t("Valori salvati sul disco, dopo include xcconfig, livelli progetto/target e variabili riconosciute. Le bozze non salvate non sono incluse.")}</p>{error&&<p role="alert" className="text-xs text-rose-300">{error}</p>}{!result&&!error&&<p role="status">{t("Risoluzione impostazioni…")}</p>}{result&&<><input aria-label={t("Filtra valori risolti")} className="bg-fruit-editor border border-fruit-border rounded p-2 text-xs w-full" value={filter} onChange={e=>setFilter(e.target.value)} placeholder={t("Filtra valori risolti")}/><div className="text-xs text-amber-300 space-y-1">{result.warnings.map((w,i)=><p key={i}>{w}</p>)}</div>{Object.entries(result.values).filter(([k])=>k.toLowerCase().includes(filter.toLowerCase())).sort(([a],[b])=>a.localeCompare(b)).map(([key,value])=><div key={key} className="grid md:grid-cols-2 gap-2 border-b border-fruit-border pb-2 text-xs font-mono"><span>{key}<small className="block text-fruit-textDim break-all">{result.origins[key]||t("Contesto IDE")}</small></span><span className="break-all whitespace-pre-wrap">{value}</span></div>)}</>}</div>;
+}

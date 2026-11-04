@@ -1,0 +1,7 @@
+import {useEffect,useRef,useState,type ReactNode,type RefObject} from 'react';
+export function VirtualList<T>({items,rowHeight,render,containerRef,role,label,onKeyDown,activeId}:{items:T[];rowHeight:number;render:(item:T,index:number)=>ReactNode;containerRef?:RefObject<HTMLDivElement>;role?:string;label?:string;onKeyDown?:React.KeyboardEventHandler<HTMLDivElement>;activeId?:string}){
+ const own=useRef<HTMLDivElement>(null),host=containerRef||own,[top,setTop]=useState(0),[height,setHeight]=useState(400);
+ useEffect(()=>{const node=host.current;if(!node)return;const observer=new ResizeObserver(()=>setHeight(node.clientHeight));observer.observe(node);setHeight(node.clientHeight);return()=>observer.disconnect();},[host]);
+ const first=Math.max(0,Math.min(Math.floor(top/rowHeight)-5,Math.max(0,items.length-Math.ceil(height/rowHeight)))),last=Math.min(items.length,first+Math.ceil(height/rowHeight)+10);
+ return <div ref={host} role={role} aria-label={label} tabIndex={onKeyDown?0:undefined} aria-activedescendant={activeId} onKeyDown={onKeyDown} className="flex-1 min-h-0 overflow-auto relative" onScroll={e=>setTop(e.currentTarget.scrollTop)}><div style={{height:items.length*rowHeight,position:'relative'}}>{items.slice(first,last).map((item,offset)=><div key={first+offset} style={{position:'absolute',top:(first+offset)*rowHeight,height:rowHeight,left:0,right:0}}>{render(item,first+offset)}</div>)}</div></div>;
+}

@@ -1,0 +1,38 @@
+import { test, after } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { build } from 'esbuild';
+const scratch = await fs.mkdtemp(path.join(os.tmpdir(), 'openfruit-settings-test-'));
+const output = path.join(scratch, 'contracts.mjs');
+await build({ stdin: { contents: "export * from './electron/projectSettings'; export * from './shared/projectSettings'; export * from './electron/workspaceAccess';", resolveDir: process.cwd() }, bundle: true, platform: 'node', format: 'esm', outfile: output });
+const { readProjectSettings, saveProjectSettings, defaultProjectSettings, projectBuildArgs, validateProjectSettings, WorkspaceAccess } = await import(pathToFileURL(output).href);
+after(() => fs.rm(scratch, { recursive: true, force: true }));
+test('project configuration persists atomically, discovers original manifests and detects competing saves', async () => {
+  const root = path.join(scratch, 'project'); await fs.mkdir(root);
+  await fs.writeFile(path.join(root, 'Package.swift'), 'original manifest');
+  const access = new WorkspaceAccess(scratch); access.activate(root);
+  const authorize = file => access.assert(file);
+  const initial = await readProjectSettings(root, authorize);
+  assert.equal(initial.revision, null); assert.equal(initial.settings.bundleId, '');
+  assert.deepEqual(initial.manifests, [path.join(root, 'Package.swift')]);
+  const nested = path.join(root, 'Apps', 'Nested.xcodeproj'); await fs.mkdir(nested, { recursive: true });
+  assert.deepEqual((await readProjectSettings(root, authorize)).xcodeProjects, [nested]);
+  const settings = { ...defaultProjectSettings, bundleId: 'com.example.app', teamId: 'ABCDE12345', configuration: 'release' };
+  const results = await Promise.allSettled([saveProjectSettings(root, settings, null, authorize), saveProjectSettings(root, { ...settings, bundleId: 'com.other.app' }, null, authorize)]);
+  assert.equal(results.filter(r => r.status === 'fulfilled').length, 1);
+  assert.equal(results.filter(r => r.status === 'rejected').length, 1);
+  const saved = await readProjectSettings(root, authorize);
+  assert.equal(saved.settings.bundleId, 'com.example.app'); assert.equal(saved.revision, results[0].value.revision);
+  assert.equal(await fs.readFile(path.join(root, 'Package.swift'), 'utf8'), 'original manifest');
+  await fs.writeFile(path.join(root, '.openfruit-studio.json'), '{broken');
+  await assert.rejects(readProjectSettings(root, authorize), SyntaxError);
+});
+test('project fields validate and build arguments preserve spaces and shell metacharacters literally', () => {
+  for (const bad of [{ bundleId: 'not an id' }, { teamId: 'short' }, { jobs: -1 }, { jobs: 1.5 }, { sdkVersion: '26;whoami' }, { configuration: '' }, { displayName: 'line\nbreak' }]) assert.throws(() => validateProjectSettings({ ...defaultProjectSettings, ...bad }));
+  const args = projectBuildArgs('C:/My Project', { ...defaultProjectSettings, bundleId: 'com.example.app', displayName: 'My & App', certificatePath: 'C:/My Certs/app.p12', provisioningProfilePath: 'C:/Profiles/app.mobileprovision', configuration: 'release', sdkVersion: '26', jobs: 4, teamId: 'ABCDE12345' });
+  assert.deepEqual(args, ['build', 'C:/My Project', '--configuration', 'release', '--diagnostics=json', '--bundle-id', 'com.example.app', '--display-name', 'My & App', '--p12', 'C:/My Certs/app.p12', '--provision', 'C:/Profiles/app.mobileprovision', '--sdk-version', '26', '-j', '4']);
+  assert.equal(args.includes('--team-id'), false);
+});

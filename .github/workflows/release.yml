@@ -12,8 +12,8 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
@@ -49,7 +49,7 @@ jobs:
             }
             Copy-Item -LiteralPath $file -Destination (Join-Path release/public $files[$file])
           }
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: openfruit-studio-windows-x64
           path: release/public/*.exe
@@ -62,7 +62,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: openfruit-studio-windows-x64
           path: release

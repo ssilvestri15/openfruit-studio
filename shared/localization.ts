@@ -688,7 +688,17 @@ const english = {
   "OpenFruit Studio {0} è disponibile.": "OpenFruit Studio {0} is available.",
   "Apri release": "View release",
   "Chiudi avviso di aggiornamento": "Dismiss update notice",
-  "Impossibile aprire la release.": "Could not open the release."
+  "Impossibile aprire la release.": "Could not open the release.",
+  "Aggiornamenti": "Updates",
+  "Versione installata": "Installed version",
+  "Canale aggiornamenti": "Update channel",
+  "Stabile": "Release",
+  "Preview include le prerelease. Release cerca solo versioni stabili.": "Preview includes prereleases. Release checks for stable versions only.",
+  "Salva le preferenze per applicare il canale.": "Save your preferences to apply the channel.",
+  "Ricerca aggiornamenti…": "Checking for updates…",
+  "Impossibile controllare GitHub Releases. Verifica la connessione e che il repository sia pubblico.": "Could not check GitHub Releases. Check your connection and whether the repository is public.",
+  "Nessun aggiornamento disponibile.": "No updates available.",
+  "Controlla aggiornamenti": "Check for updates"
 } as const;
 
 export type Message = keyof typeof english;

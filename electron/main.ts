@@ -20,7 +20,8 @@ import { readProjectSettings, saveProjectSettings, drainProjectSettings } from '
 import { mergeContents } from './merge';
 import { PtyManager } from './pty';
 import { app, BrowserWindow, ipcMain, dialog, shell, net } from 'electron';
-import { checkForStudioUpdate, studioReleasesUrl } from './updates';
+import { checkForStudioUpdate, studioReleasesUrl, studioUpdateChannel } from './updates';
+import type { StudioUpdateChannel, StudioUpdateResult } from '../shared/updates';
 import path from 'path';
 import { fileURLToPath } from 'node:url';
 import fs from 'fs';
@@ -1009,16 +1010,35 @@ async function dialogTranslator() {
 
 handleIpc('load-preferences', loadPreferences);
 
-let updateCheck: ReturnType<typeof checkForStudioUpdate> | undefined;
-const getStudioUpdate = () => {
-  if (!app.isPackaged) return Promise.resolve(null);
-  return updateCheck ??= checkForStudioUpdate(app.getVersion(), (url, options) => net.fetch(url, options));
-};
+const updateChecks = new Map<StudioUpdateChannel, Promise<StudioUpdateResult>>();
+const checkedUpdates = new Map<StudioUpdateChannel, StudioUpdateResult>();
 
-handleIpc('check-studio-update', getStudioUpdate);
+async function getUpdateChannel() {
+  const { updateChannel } = await loadPreferences().catch(() => defaultPreferences);
+  return studioUpdateChannel(app.getVersion(), updateChannel);
+}
+
+async function getStudioUpdate(channel: StudioUpdateChannel, refresh = false): Promise<StudioUpdateResult> {
+  if (!app.isPackaged) return { status: 'unavailable' };
+  const updateCheck = updateChecks.get(channel);
+  if (updateCheck) return updateCheck;
+  const checkedUpdate = checkedUpdates.get(channel);
+  if (!refresh && checkedUpdate) return checkedUpdate;
+  const pending = checkForStudioUpdate(app.getVersion(), (url, options) => net.fetch(url, options), channel)
+    .then(result => { checkedUpdates.set(channel, result); return result; })
+    .finally(() => { updateChecks.delete(channel); });
+  updateChecks.set(channel, pending);
+  return pending;
+}
+
+handleIpc('check-studio-update', async (_event, refresh: unknown) => {
+  const version = app.getVersion();
+  const channel = await getUpdateChannel();
+  return { version, channel, ...await getStudioUpdate(channel, refresh === true) };
+});
 handleIpc('open-studio-update', async () => {
-  const update = await getStudioUpdate();
-  if (update) await shell.openExternal(update.releaseUrl);
+  const result = await getStudioUpdate(await getUpdateChannel());
+  if (result.status === 'available') await shell.openExternal(result.update.releaseUrl);
 });
 handleIpc('save-preferences', async (_event, input: unknown) => {
   const value = validatePreferences(input);
@@ -1047,7 +1067,11 @@ handleIpc('git-save-identity', async (_event, { name, email }) => {
 handleIpc('open-help', async (_event, topic: string) => {
   if (topic === 'news') return shell.openExternal(studioReleasesUrl);
   if (topic !== 'docs') throw new Error('Documento non valido');
-  const error = await shell.openPath(path.join(app.getAppPath(), 'README.md'));
+  const contents = await fs.promises.readFile(path.join(app.getAppPath(), 'README.md'), 'utf8');
+  const directory = await fs.promises.mkdtemp(path.join(app.getPath('temp'), 'openfruit-help-'));
+  const file = path.join(directory, 'OpenFruit Studio.txt');
+  await fs.promises.writeFile(file, contents, 'utf8');
+  const error = await shell.openPath(file);
   if (error) throw new Error(error);
 });
 

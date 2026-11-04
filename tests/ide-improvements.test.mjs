@@ -43,7 +43,9 @@ test('preferences validate bounds, reject arbitrary enum values and ignore unkno
  assert.equal(api.validatePreferences({...api.defaultPreferences,fontSize:18,extra:'discard'}).fontSize,18);assert.equal('extra' in api.validatePreferences({extra:'discard'}),false);
  assert.equal(api.validatePreferences({}).language,'it');
  assert.equal(api.validatePreferences({language:'en'}).language,'en');
- for(const bad of [{fontSize:300},{autoSave:'always'},{theme:'other'},{language:'fr'},{tabSize:0},{wordWrap:'true'}])assert.throws(()=>api.validatePreferences({...api.defaultPreferences,...bad}));
+ assert.equal(api.validatePreferences({}).updateChannel,'auto');
+ assert.equal(api.validatePreferences({updateChannel:'stable'}).updateChannel,'stable');
+ for(const bad of [{fontSize:300},{autoSave:'always'},{theme:'other'},{language:'fr'},{updateChannel:'nightly'},{tabSize:0},{wordWrap:'true'}])assert.throws(()=>api.validatePreferences({...api.defaultPreferences,...bad}));
 });
 test('repository management operates on temporary repository with qualified refs, safe arguments and paginated history',async()=>{
  const root=path.join(scratch,'git');await fs.mkdir(root);const run=async args=>{const r=await api.execGit(root,args);assert.equal(r.code,0,r.stderr);return r;};

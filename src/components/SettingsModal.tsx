@@ -5,6 +5,7 @@ import type { OpenFruitDevice } from '../types';
 import type { Preferences } from '../../shared/preferences';
 import type { EnvironmentAction, EnvironmentSnapshot } from '../../shared/environment';
 import { useDialog } from '../hooks/useDialog';
+import { StudioUpdateSettings } from './StudioUpdateSettings';
 
 interface Props {
   isOpen: boolean; onClose: () => void;
@@ -80,8 +81,11 @@ export function SettingsModal(props: Props) {
     <div className="max-w-5xl w-full h-full max-h-[800px] rounded-2xl border border-fruit-border bg-fruit-bg text-fruit-text flex flex-col overflow-hidden">
       <header className="p-5 border-b border-fruit-border flex items-center justify-between"><h2 className="font-syne text-xl font-bold">{t("Impostazioni")}</h2><button aria-label={t("Chiudi impostazioni")} disabled={!!job} onClick={close}><X size={18} /></button></header>
       <div className="flex flex-1 min-h-0 flex-col md:flex-row">
-        <nav className="p-3 md:w-48 md:border-r border-fruit-border flex md:flex-col gap-1 overflow-auto">{[['general',t("Generali")],['environment',t("Ambiente")],['sdk','SDK'],['editor','Editor'],['terminal',t("Terminale")],['devices',t("Dispositivi")],['git','Git'],['help',t("Guida")]].map(([id,label]) => <button key={id} onClick={() => setTab(id)} aria-current={tab === id ? 'page' : undefined} className={`px-3 py-2 text-sm rounded-lg text-left whitespace-nowrap ${tab === id ? 'text-fruit-accent bg-fruit-accent/10' : 'hover:bg-fruit-surface'}`}>{label}</button>)}</nav>
+        <nav className="p-3 md:w-48 md:border-r border-fruit-border flex md:flex-col gap-1 overflow-auto">{[['general',t("Generali")],['updates',t("Aggiornamenti")],['environment',t("Ambiente")],['sdk','SDK'],['editor','Editor'],['terminal',t("Terminale")],['devices',t("Dispositivi")],['git','Git'],['help',t("Guida")]].map(([id,label]) => <button key={id} onClick={() => setTab(id)} aria-current={tab === id ? 'page' : undefined} className={`px-3 py-2 text-sm rounded-lg text-left whitespace-nowrap ${tab === id ? 'text-fruit-accent bg-fruit-accent/10' : 'hover:bg-fruit-surface'}`}>{label}</button>)}</nav>
         <section className="flex-1 p-6 overflow-auto space-y-5">
+          {tab === 'updates' && <StudioUpdateSettings key={props.preferences.updateChannel}
+            preference={draft.updateChannel} savedPreference={props.preferences.updateChannel}
+            onChannelChange={updateChannel => setDraft(previous => ({ ...previous, updateChannel }))} />}
           {tab === 'general' && <label className="block max-w-sm space-y-2 text-sm">
             {t("Lingua")}
             <select className={control} value={draft.language}

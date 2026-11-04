@@ -1,4 +1,4 @@
-import type { StudioUpdate } from '../shared/updates';
+import type { StudioUpdateChannel, StudioUpdatePreference, StudioUpdateResult } from '../shared/updates';
 
 const repository = 'ssilvestri15/openfruit-studio';
 export const studioReleasesUrl = `https://github.com/${repository}/releases`;
@@ -19,6 +19,11 @@ function parseVersion(value: string) {
 }
 
 type Version = NonNullable<ReturnType<typeof parseVersion>>;
+
+export function studioUpdateChannel(version: string, preference: StudioUpdatePreference = 'auto'): StudioUpdateChannel {
+  if (preference !== 'auto') return preference;
+  return parseVersion(version)?.prerelease.length ? 'preview' : 'stable';
+}
 
 function compareVersions(left: Version, right: Version): number {
   for (const index of [0, 1, 2]) {
@@ -42,11 +47,12 @@ function compareVersions(left: Version, right: Version): number {
 
 export async function checkForStudioUpdate(
   current: string,
-  request: (url: string, options: RequestInit) => Promise<Response>
-): Promise<StudioUpdate | null> {
+  request: (url: string, options: RequestInit) => Promise<Response>,
+  channel = studioUpdateChannel(current)
+): Promise<StudioUpdateResult> {
   const installed = parseVersion(current);
-  if (!installed) return null;
-  const preview = installed.prerelease.length > 0;
+  if (!installed) return { status: 'unavailable' };
+  const preview = channel === 'preview';
 
   try {
     const endpoint = preview ? 'releases?per_page=100' : 'releases/latest';
@@ -54,10 +60,10 @@ export async function checkForStudioUpdate(
       headers: { Accept: 'application/vnd.github+json' },
       signal: AbortSignal.timeout(8000)
     });
-    if (!response.ok) return null;
+    if (!response.ok) return { status: 'unavailable' };
     const payload = await response.json();
     const releases = preview ? payload : [payload];
-    if (!Array.isArray(releases)) return null;
+    if (!Array.isArray(releases)) return { status: 'unavailable' };
     let bestVersion = installed;
     let bestTag: string | undefined;
     for (const release of releases) {
@@ -70,13 +76,16 @@ export async function checkForStudioUpdate(
       bestVersion = candidate;
       bestTag = release.tag_name;
     }
-    if (!bestTag) return null;
+    if (!bestTag) return { status: 'current' };
 
     return {
-      version: bestVersion.label,
-      releaseUrl: `${studioReleasesUrl}/tag/${encodeURIComponent(bestTag)}`
+      status: 'available',
+      update: {
+        version: bestVersion.label,
+        releaseUrl: `${studioReleasesUrl}/tag/${encodeURIComponent(bestTag)}`
+      }
     };
   } catch {
-    return null;
+    return { status: 'unavailable' };
   }
 }

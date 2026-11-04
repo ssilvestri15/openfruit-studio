@@ -1,3 +1,5 @@
+import type { StudioUpdatePreference } from './updates';
+
 export const defaultKeybindings = {open:'Ctrl+O',newWindow:'Ctrl+Shift+W',newFile:'Ctrl+N',newProject:'Ctrl+Shift+N',save:'Ctrl+S',saveAll:'Ctrl+Shift+S',saveAs:'Ctrl+Alt+Shift+S',palette:'Ctrl+Shift+P',quickOpen:'Ctrl+P',search:'Ctrl+Shift+F',replace:'Ctrl+Shift+H',toggleFiles:'Ctrl+B',toggleTerminal:'Ctrl+J',toggleCanvas:'Ctrl+Alt+P',build:'Ctrl+R'};
 export type ShortcutAction = keyof typeof defaultKeybindings;
 export type Language = 'en' | 'it';
@@ -12,6 +14,7 @@ export function shortcutMatches(event:{key:string;ctrlKey:boolean;metaKey:boolea
  return !!(event.ctrlKey||event.metaKey)===parts.includes('ctrl')&&event.altKey===parts.includes('alt')&&event.shiftKey===parts.includes('shift')&&(event.key===' '?'space':event.key.toLowerCase())===key;
 }
 export interface Preferences {
+  updateChannel: StudioUpdatePreference;
   language: Language;
   keybindings: typeof defaultKeybindings;
   fontSize: number; tabSize: number; wordWrap: boolean; minimap: boolean;
@@ -19,6 +22,7 @@ export interface Preferences {
   terminalFontSize: number; terminalScrollback: number;
 }
 export const defaultPreferences: Preferences = {
+  updateChannel: 'auto',
   language: 'it',
   keybindings: {...defaultKeybindings},
   fontSize: 13, tabSize: 4, wordWrap: false, minimap: true, autoSave: 'off', autoSaveDelay: 1500,
@@ -32,7 +36,8 @@ export function validatePreferences(input: unknown): Preferences {
   }
   for (const key of ['wordWrap', 'minimap'] as const) if (typeof value[key] !== 'boolean') throw new Error(`Preferenza non valida: ${key}`);
   if (!['off', 'afterDelay'].includes(value.autoSave) || !['dark', 'light'].includes(value.theme) ||
-      !['en', 'it'].includes(value.language)) throw new Error('Preferenze non valide');
+      !['en', 'it'].includes(value.language) ||
+      !['auto', 'preview', 'stable'].includes(value.updateChannel)) throw new Error('Preferenze non valide');
   const bindings=(input as Partial<Preferences>).keybindings||defaultKeybindings;
   if(!bindings||typeof bindings!=='object'||Array.isArray(bindings))throw new Error('Scorciatoie non valide');
   const unique=new Set<string>();value.keybindings={...defaultKeybindings};

@@ -1,26 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Download, X } from 'lucide-react';
-import type { StudioUpdate } from '../../shared/updates';
+import type { StudioUpdate, StudioUpdateApi, StudioUpdatePreference } from '../../shared/updates';
 import { useTranslation } from '../localization';
 
-type UpdateApi = {
-  checkStudioUpdate(): Promise<StudioUpdate | null>;
-  openStudioUpdate(): Promise<void>;
-};
-
-export function StudioUpdateBanner() {
+export function StudioUpdateBanner({ preference }: { preference: StudioUpdatePreference }) {
   const t = useTranslation();
   const [update, setUpdate] = useState<StudioUpdate | null>(null);
   const [failedToOpen, setFailedToOpen] = useState(false);
-  const api = (window as Window & { openfruitApi?: UpdateApi }).openfruitApi;
+  const api = (window as Window & { openfruitApi?: StudioUpdateApi }).openfruitApi;
 
   useEffect(() => {
     let active = true;
+    setUpdate(null);
+    setFailedToOpen(false);
     api?.checkStudioUpdate?.().then(result => {
-      if (active) setUpdate(result);
+      if (active && result.status === 'available') setUpdate(result.update);
     }).catch(() => {});
     return () => { active = false; };
-  }, [api]);
+  }, [api, preference]);
 
   if (!update || !api) return null;
 

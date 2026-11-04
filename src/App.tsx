@@ -1243,7 +1243,7 @@ function Studio({ preferences, savePreferences, preferenceError }: ReturnType<ty
 
   return (
     <div className="w-screen h-screen overflow-hidden bg-fruit-bg text-fruit-text flex flex-col font-syne select-none">
-      <StudioUpdateBanner />
+      <StudioUpdateBanner preference={preferences.updateChannel} />
       {(sessionError || preferenceError) && <div role="alert" className="bg-amber-950 text-amber-100 px-3 py-2 text-xs">{sessionError || preferenceError}</div>}
       {/* Welcome Screen or IDE */}
       {currentScreen === 'welcome' ? (

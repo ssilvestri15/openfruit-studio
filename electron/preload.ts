@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('openfruitApi', {
-  checkStudioUpdate: (): Promise<import('../shared/updates').StudioUpdate | null> => ipcRenderer.invoke('check-studio-update'),
+  checkStudioUpdate: (refresh?: boolean): Promise<import('../shared/updates').StudioUpdateState> => ipcRenderer.invoke('check-studio-update', refresh),
   openStudioUpdate: (): Promise<void> => ipcRenderer.invoke('open-studio-update'),
   ptyOpen: (id: string, cwd: string, profile?: 'powershell' | 'cmd') => ipcRenderer.invoke('pty-open', { id, cwd, profile }),
   ptyWrite: (id: string, token: string, data: string) => ipcRenderer.invoke('pty-write', { id, token, data }),

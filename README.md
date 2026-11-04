@@ -77,7 +77,7 @@ Git and Apple Devices use Windows Package Manager. OpenFruit is downloaded from 
 1. Run **Windows build and release** manually from a branch and download the Windows x64 Actions artifact for review.
 2. Push a tag matching the version in `package.json`, for example `0.1.0-dev`. The workflow runs the test suite and UI smoke test, builds both executables, then runs the packaged smoke test before publishing the assets to GitHub Releases. Windows packages can be published unsigned.
 
-Packaged copies of Studio check public GitHub Releases at startup. Stable builds receive stable updates. Preview builds, such as `0.1.0-dev`, can receive newer previews and stable releases. Update the download links above when promoting a new preview.
+Packaged copies of Studio check public GitHub Releases at startup. In **Settings → Updates**, choose **Release** for stable updates or **Preview** for prereleases and stable updates, then save your preferences. Studio defaults to the channel of the installed build until you choose one. Update the download links above when promoting a new preview.
 
 ## How it talks to OpenFruit
 

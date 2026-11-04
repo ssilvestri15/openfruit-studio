@@ -24,7 +24,10 @@ test('announces a newer stable release and constructs the official GitHub link',
     version: '0.10.0',
     releaseUrl: 'https://github.com/ssilvestri15/openfruit-studio/releases/tag/v0.10.0'
   });
-  assert.ok(await checkForStudioUpdate('1.0.0-beta.2', release('v1.0.0')));
+  assert.deepEqual(await checkForStudioUpdate('0.1.0-dev', release('0.1.0')), {
+    version: '0.1.0',
+    releaseUrl: 'https://github.com/ssilvestri15/openfruit-studio/releases/tag/0.1.0'
+  });
 });
 
 test('ignores unchanged versions, older versions, drafts, prereleases, invalid tags and network failures', async () => {

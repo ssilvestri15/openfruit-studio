@@ -2,7 +2,7 @@ name: Windows build and release
 
 on:
   push:
-    tags: ['v*']
+    tags: ['[0-9]*']
   workflow_dispatch:
 
 permissions:
@@ -22,8 +22,8 @@ jobs:
         shell: pwsh
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
-          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -cne "v$version") {
-            throw "Tag $env:GITHUB_REF_NAME must match package.json (v$version)."
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -cne $version) {
+            throw "Tag $env:GITHUB_REF_NAME must match package.json ($version)."
           }
           "version=$version" >> $env:GITHUB_OUTPUT
       - run: npm ci
@@ -70,7 +70,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="$GITHUB_REF_NAME"
           args=(--verify-tag --generate-notes)
           if [[ "$version" == *-* ]]; then
             args+=(--prerelease)

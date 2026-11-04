@@ -30,21 +30,8 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run test:media-ui
-      - name: Build Windows packages for review
-        if: github.ref_type != 'tag'
+      - name: Build Windows packages
         run: npm run dist -- --x64 --publish never
-      - name: Build and sign Windows release packages
-        if: github.ref_type == 'tag'
-        shell: pwsh
-        env:
-          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
-          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
-        run: |
-          if (-not $env:WIN_CSC_LINK -or -not $env:WIN_CSC_KEY_PASSWORD) {
-            throw 'Configure WIN_CSC_LINK and WIN_CSC_KEY_PASSWORD before publishing a release.'
-          }
-          npm run dist -- --x64 --publish never -c.forceCodeSigning=true
-          exit $LASTEXITCODE
       - run: npm run test:packaged
       - name: Stage validated release files
         shell: pwsh
@@ -59,12 +46,6 @@ jobs:
           foreach ($file in $files.Keys) {
             if (-not (Test-Path -LiteralPath $file -PathType Leaf)) {
               throw "Missing expected artifact: $file"
-            }
-            if ($env:GITHUB_REF_TYPE -eq 'tag') {
-              $signature = Get-AuthenticodeSignature -LiteralPath $file
-              if ($signature.Status -ne 'Valid' -or -not $signature.TimeStamperCertificate) {
-                throw "A valid, timestamped Authenticode signature is required for $file. Status: $($signature.Status)."
-              }
             }
             Copy-Item -LiteralPath $file -Destination (Join-Path release/public $files[$file])
           }

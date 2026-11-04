@@ -46,6 +46,8 @@ OpenFruit Studio runs on **Windows 10 or 11 (x64)**. These links point to the la
 - **[Download Windows Portable](https://github.com/ssilvestri15/openfruit-studio/releases/latest/download/OpenFruit-Studio-Portable-x64.exe)** to run Studio directly. Set up any tools you need separately.
 - [View release notes and earlier versions](https://github.com/ssilvestri15/openfruit-studio/releases).
 
+Windows may display a SmartScreen warning when you open an unsigned download. [Learn how SmartScreen evaluates downloads](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation).
+
 ### Build your first iOS project
 
 1. Install the [OpenFruit CLI](https://github.com/ssilvestri15/openfruit) and configure an iOS SDK using its instructions. Studio looks for the executable in `OPENFRUIT_BIN`, then `OPENFRUIT_HOME\bin\openfruit.exe`, then `%LOCALAPPDATA%\OPENFRUIT\bin\openfruit.exe`.
@@ -73,8 +75,7 @@ Git and Apple Devices use Windows Package Manager. OpenFruit is downloaded from 
 ### Publish a Windows release
 
 1. Run **Windows build and release** manually from a branch and download the Windows x64 Actions artifact for review.
-2. Configure the repository’s Actions secrets `WIN_CSC_LINK` with the base64-encoded production code-signing PFX and `WIN_CSC_KEY_PASSWORD` with its password. Use a certificate trusted by Windows. See the [electron-builder signing guide](https://www.electron.build/docs/features/code-signing/).
-3. Push a tag matching the version in `package.json`, for example `v0.1.0`. The workflow runs the test suite and UI smoke test, builds and signs both executables, then runs the packaged smoke test and verifies both timestamped Authenticode signatures. Only then does it publish the assets to GitHub Releases.
+2. Push a tag matching the version in `package.json`, for example `v0.1.0`. The workflow runs the test suite and UI smoke test, builds both executables, then runs the packaged smoke test before publishing the assets to GitHub Releases. Windows packages can be published unsigned.
 
 Packaged copies of Studio check GitHub Releases for a newer stable version at startup. Publishing a prerelease makes it available on the Releases page while stable download links continue to point to the latest stable release.
 
@@ -106,6 +107,6 @@ npm test
 npm run test:desktop
 ```
 
-`test:desktop` needs a build and OpenFruit installed. Detailed development notes (in Italian) are in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+`test:desktop` needs a build and OpenFruit installed. See the [development guide](docs/DEVELOPMENT.md) for implementation and testing details.
 
 Made with ❤️ by Simone and his friend AI 🤖

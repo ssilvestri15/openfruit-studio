@@ -96,7 +96,7 @@ test('repository operations from nested projects resolve paths against the actua
   await execGit(root, ['init']);
   await fs.writeFile(path.join(project, 'View.swift'), 'let value = 1\n');
   await fs.writeFile(path.join(root, 'root.txt'), 'root\n');
-  assert.equal((await gitRoot(project)).toLowerCase(), root.toLowerCase());
+  assert.equal(await fs.realpath(await gitRoot(project)), await fs.realpath(root));
   await execRepositoryGit(project, ['add', '--', 'Apps/Sample/View.swift']);
   const status = parseGitStatus((await execRepositoryGit(project, ['status', '--porcelain=v1', '-z'])).stdout);
   assert.deepEqual(status.stagedFiles.map(file => file.filename), ['Apps/Sample/View.swift']);

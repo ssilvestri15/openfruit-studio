@@ -77,7 +77,7 @@ test('PowerShell tabs preserve variables, location and Unicode, and report nativ
   const retained = await terminals.run(1, 'one', root, "$OpenFruitTestValue; 'città 🌱'");
   assert.equal(retained.success, true);
   assert.match(retained.stdout, /42/); assert.match(retained.stdout, /città 🌱/);
-  assert.equal(retained.cwd.toLowerCase(), path.join(root, 'sub').toLowerCase());
+  assert.equal(await fs.realpath(retained.cwd), await fs.realpath(path.join(root, 'sub')));
   const separate = await terminals.run(1, 'two', root, '$null -eq $OpenFruitTestValue');
   assert.match(separate.stdout, /True/);
   const failure = await terminals.run(1, 'one', root, 'cmd.exe /c exit 7');

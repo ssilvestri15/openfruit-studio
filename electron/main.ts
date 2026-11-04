@@ -20,7 +20,7 @@ import { readProjectSettings, saveProjectSettings, drainProjectSettings } from '
 import { mergeContents } from './merge';
 import { PtyManager } from './pty';
 import { app, BrowserWindow, ipcMain, dialog, shell, net } from 'electron';
-import { checkForStudioUpdate } from './updates';
+import { checkForStudioUpdate, studioReleasesUrl } from './updates';
 import path from 'path';
 import { fileURLToPath } from 'node:url';
 import fs from 'fs';
@@ -1045,9 +1045,10 @@ handleIpc('git-save-identity', async (_event, { name, email }) => {
   }
 });
 handleIpc('open-help', async (_event, topic: string) => {
-  const files: Record<string, string> = { docs: 'README.md', news: 'docs/IMPLEMENTATION_PROGRESS_2026-10-30.md' };
-  if (!Object.hasOwn(files, topic)) throw new Error('Documento non valido');
-  const error = await shell.openPath(path.join(app.getAppPath(), files[topic])); if (error) throw new Error(error);
+  if (topic === 'news') return shell.openExternal(studioReleasesUrl);
+  if (topic !== 'docs') throw new Error('Documento non valido');
+  const error = await shell.openPath(path.join(app.getAppPath(), 'README.md'));
+  if (error) throw new Error(error);
 });
 
 handleIpc('workspace-search', (event, request) => {

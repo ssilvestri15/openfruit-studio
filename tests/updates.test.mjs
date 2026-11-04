@@ -13,10 +13,18 @@ const { checkForStudioUpdate } = await import(
   'data:text/javascript;base64,' + Buffer.from(outputFiles[0].contents).toString('base64')
 );
 
+const entry = (tag, overrides = {}) => ({ tag_name: tag, draft: false, prerelease: false, ...overrides });
+
 const release = (tag, overrides = {}) => async (url, { signal }) => {
   assert.equal(url, 'https://api.github.com/repos/ssilvestri15/openfruit-studio/releases/latest');
   assert.ok(signal);
-  return Response.json({ tag_name: tag, draft: false, prerelease: false, ...overrides });
+  return Response.json(entry(tag, overrides));
+};
+
+const previewReleases = (...releases) => async (url, { signal }) => {
+  assert.equal(url, 'https://api.github.com/repos/ssilvestri15/openfruit-studio/releases?per_page=100');
+  assert.ok(signal);
+  return Response.json(releases);
 };
 
 test('announces a newer stable release and constructs the official GitHub link', async () => {
@@ -24,10 +32,27 @@ test('announces a newer stable release and constructs the official GitHub link',
     version: '0.10.0',
     releaseUrl: 'https://github.com/ssilvestri15/openfruit-studio/releases/tag/v0.10.0'
   });
-  assert.deepEqual(await checkForStudioUpdate('0.1.0-dev', release('0.1.0')), {
+  assert.deepEqual(await checkForStudioUpdate('0.1.0-dev', previewReleases(entry('0.1.0'))), {
     version: '0.1.0',
     releaseUrl: 'https://github.com/ssilvestri15/openfruit-studio/releases/tag/0.1.0'
   });
+});
+
+test('preview builds pick the highest eligible version, regardless of release order', async () => {
+  const responses = [
+    entry('0.1.0-dev.2', { prerelease: true }),
+    entry('0.1.0-dev.10', { prerelease: true }),
+    entry('0.2.0-dev', { prerelease: true, draft: true }),
+    entry('0.1.1-dev'),
+    entry('0.1.0-dev.011', { prerelease: true }),
+    entry('0.0.9')
+  ];
+  assert.deepEqual(await checkForStudioUpdate('0.1.0-dev.1', previewReleases(...responses)), {
+    version: '0.1.0-dev.10',
+    releaseUrl: 'https://github.com/ssilvestri15/openfruit-studio/releases/tag/0.1.0-dev.10'
+  });
+  assert.equal(await checkForStudioUpdate('0.1.0-dev.10', previewReleases(...responses)), null);
+  assert.equal((await checkForStudioUpdate('0.1.0-dev.1', previewReleases(...responses, entry('0.1.0'))))?.version, '0.1.0');
 });
 
 test('ignores unchanged versions, older versions, drafts, prereleases, invalid tags and network failures', async () => {

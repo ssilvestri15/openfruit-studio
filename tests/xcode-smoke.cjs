@@ -59,7 +59,7 @@ app.whenReady().then(async () => {
     await wait(() => run(`document.querySelector('input[aria-label="Bundle ID"]')?.value === 'com.changed.release'`));
     await run('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))');
     await new Promise(resolve => setTimeout(resolve, 100));
-    fs.writeFileSync(path.join(__dirname, '..', 'docs', 'xcode-project-editor-2026-10-30.png'), (await win.webContents.capturePage()).toPNG());
+    fs.writeFileSync(path.join(scratch, 'xcode-project-editor.png'), (await win.webContents.capturePage()).toPNG());
     await input('Bundle ID', 'com.local.unsaved');
     const external = fs.readFileSync(file, 'utf8') + '// external change\n'; fs.writeFileSync(file, external);
     await click('Salva progetto');

@@ -40,10 +40,10 @@ That's the long-term challenge.
 
 ## Getting started
 
-OpenFruit Studio runs on **Windows 10 or 11 (x64)**. These links point to the latest stable GitHub release once it is published.
+OpenFruit Studio runs on **Windows 10 or 11 (x64)**. The current download is **Development Preview 0.1.0-dev**.
 
-- **[Download Windows Setup](https://github.com/ssilvestri15/openfruit-studio/releases/latest/download/OpenFruit-Studio-Setup-x64.exe)** for a guided installation with optional OpenFruit, Git for Windows, Apple Devices, and a desktop shortcut.
-- **[Download Windows Portable](https://github.com/ssilvestri15/openfruit-studio/releases/latest/download/OpenFruit-Studio-Portable-x64.exe)** to run Studio directly. Set up any tools you need separately.
+- **[Download Windows Setup](https://github.com/ssilvestri15/openfruit-studio/releases/download/0.1.0-dev/OpenFruit-Studio-Setup-x64.exe)** for a guided installation with optional OpenFruit, Git for Windows, Apple Devices, and a desktop shortcut.
+- **[Download Windows Portable](https://github.com/ssilvestri15/openfruit-studio/releases/download/0.1.0-dev/OpenFruit-Studio-Portable-x64.exe)** to run Studio directly. Set up any tools you need separately.
 - [View release notes and earlier versions](https://github.com/ssilvestri15/openfruit-studio/releases).
 
 Windows may display a SmartScreen warning when you open an unsigned download. [Learn how SmartScreen evaluates downloads](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation).
@@ -77,7 +77,7 @@ Git and Apple Devices use Windows Package Manager. OpenFruit is downloaded from 
 1. Run **Windows build and release** manually from a branch and download the Windows x64 Actions artifact for review.
 2. Push a tag matching the version in `package.json`, for example `0.1.0-dev`. The workflow runs the test suite and UI smoke test, builds both executables, then runs the packaged smoke test before publishing the assets to GitHub Releases. Windows packages can be published unsigned.
 
-Packaged copies of Studio check GitHub Releases for a newer stable version at startup. Publishing a prerelease makes it available on the Releases page while stable download links continue to point to the latest stable release.
+Packaged copies of Studio check public GitHub Releases at startup. Stable builds receive stable updates. Preview builds, such as `0.1.0-dev`, can receive newer previews and stable releases. Update the download links above when promoting a new preview.
 
 ## How it talks to OpenFruit
 

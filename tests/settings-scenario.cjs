@@ -32,7 +32,7 @@ module.exports = async function settingsScenario(win, root, fs, path, assert) {
   assert.equal(fs.readFileSync(path.join(root, 'Package.swift'), 'utf8'), manifest);
   await click('Generale');
   await new Promise(resolve => setTimeout(resolve, 50));
-  fs.writeFileSync(path.join(__dirname, '..', 'docs', 'project-settings-2026-10-30.png'), (await win.webContents.capturePage()).toPNG());
+  fs.writeFileSync(path.join(path.dirname(root), 'project-settings.png'), (await win.webContents.capturePage()).toPNG());
   await run('document.querySelector(\'button[aria-label="Chiudi configurazione progetto"]\').click(); true');
   await wait(() => run('!document.querySelector(\'[role=dialog]\')'));
   await run(`document.querySelector('[data-file-path=' + CSS.escape(${JSON.stringify(root)}) + '] button[title="Configurazione progetto"]').click(); true`);

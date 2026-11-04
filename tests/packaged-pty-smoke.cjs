@@ -5,11 +5,10 @@ const pty = require(path.join(root, 'app.asar', 'node_modules', 'node-pty'));
 const terminal = pty.spawn('powershell.exe', ['-NoLogo', '-NoProfile'], {
   cwd: require('node:os').tmpdir(), cols: 80, rows: 24, useConptyDll: true, env: process.env
 });
-let output = '', ready = false;
+let output = '';
 const timeout = setTimeout(() => { console.error('Packaged ConPTY timed out: ' + output); terminal.kill(); process.exitCode = 1; }, 10000);
 terminal.onData(data => {
   output += data;
-  if (!ready && output.includes('PS ')) { ready = true; terminal.write("Write-Output ('PACKAGED'+'_PTY_OK'); exit 0\r"); }
 });
 terminal.onExit(({ exitCode }) => {
   clearTimeout(timeout);
@@ -18,3 +17,4 @@ terminal.onExit(({ exitCode }) => {
   try { assert.equal(exitCode, 0); assert.ok(output.includes('PACKAGED_PTY_OK')); console.log('PASS: packaged Electron loads unpacked ConPTY DLL, native addon and worker, executes PowerShell and exits'); }
   catch (error) { console.error(error); process.exitCode = 1; }
 });
+terminal.write("Write-Output ('PACKAGED'+'_PTY_OK'); exit 0\r");

@@ -19,16 +19,15 @@ test('native PTY enforces owner, token and dimensions; natural exit releases the
   const exited = new Promise(resolve => { done = resolve; });
   token = manager.open(1, 'test', scratch, event => {
     if (event.data) { output += event.data; manager.ack(1, 'test', event.token, event.data.length); }
-    else done();
+    else done(event.exitCode);
   });
   assert.throws(() => manager.write(2, 'test', token, 'no'));
   assert.throws(() => manager.write(1, 'test', 'wrong', 'no'));
   assert.throws(() => manager.resize(1, 'test', token, 0, 20));
-  const deadline = Date.now() + 5000;
-  while (!output.includes('PS ') && Date.now() < deadline) await new Promise(r => setTimeout(r, 30));
-  assert.ok(output.includes('PS '));
-  manager.write(1, 'test', token, 'exit 0\r');
-  await Promise.race([exited, new Promise((_, reject) => { const timer = setTimeout(() => reject(new Error('ConPTY exit timeout')), 5000); timer.unref(); })]);
+  manager.write(1, 'test', token, "Write-Output ('NATIVE'+'_PTY_OK'); exit 0\r");
+  const exitCode = await Promise.race([exited, new Promise((_, reject) => { const timer = setTimeout(() => reject(new Error('ConPTY exit timeout')), 15000); timer.unref(); })]);
+  assert.equal(exitCode, 0);
+  assert.ok(output.includes('NATIVE_PTY_OK'), 'PowerShell must execute the command sent through the PTY');
   await new Promise(r => setTimeout(r, 1400));
   assert.equal(ports(), initial, 'A closed shell must not retain its output worker');
   manager.ack(1, 'test', token, 1); // asynchronous xterm acknowledgements after exit are harmless.
